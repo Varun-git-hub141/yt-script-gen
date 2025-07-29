@@ -1,30 +1,36 @@
 import streamlit as st
 import openai
+import os
+from dotenv import load_dotenv
 
-# Set API Key (replace YOUR_API_KEY with your key or use secrets)
-openai.api_key = "YOUR_API_KEY"
+# Load environment variables from .env
+load_dotenv()
 
-st.set_page_config(page_title="📖 AI Story Generator", layout="centered")
-st.title("📖 AI Story Generator")
-st.markdown("Enter a prompt or theme, and let AI create a story for you.")
+# Securely get OpenAI API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# User input
-prompt = st.text_input("📝 Your story idea (e.g. 'a dragon who wants to learn coding')")
+# Streamlit UI
+st.set_page_config(page_title="🎬 YouTube Script Generator", layout="centered")
+st.title("🎬 AI YouTube Script Generator")
+st.markdown("Generate a full video script from a topic using GPT!")
 
-if st.button("✨ Generate Story"):
-    if prompt:
-        with st.spinner("Generating your story..."):
+# Input
+user_topic = st.text_input("📝 Enter your video topic here:")
+generate = st.button("▶️ Generate Script")
+
+# Generate Script
+if generate and user_topic:
+    with st.spinner("Generating your script..."):
+        prompt = f"Create a detailed YouTube video script for the topic: {user_topic}"
+        try:
             response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",  # or gpt-4 if available
-                messages=[
-                    {"role": "system", "content": "You are a creative story writer."},
-                    {"role": "user", "content": f"Write a detailed short story about: {prompt}"}
-                ],
-                temperature=0.8,
-                max_tokens=500
+                model="gpt-3.5-turbo",  # or gpt-4 if you have access
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=800
             )
-            story = response['choices'][0]['message']['content']
-            st.subheader("📚 Your Generated Story:")
-            st.write(story)
-    else:
-        st.warning("Please enter a story idea to continue.")
+            script = response['choices'][0]['message']['content']
+            st.subheader("🎥 Generated Script")
+            st.write(script)
+        except Exception as e:
+            st.error(f"❌ Error: {e}")
